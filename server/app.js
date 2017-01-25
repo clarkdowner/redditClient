@@ -1,16 +1,23 @@
 var express = require('express');
+var request = require('request');
 var app = express();
 
 app.get('/', function(req, res) {
   res.send('This isn\'t Reddit');
 })
 
-app.get('/hot', function(req, res) {
-	res.send('These posts are hot');
+app.get('/top', function(req, res) {
+	request({
+		method: 'GET',
+		url: 'https://www.reddit.com/top.json',
+	}).pipe(res);
 })
 
-app.get('/top', function(req, res) {
-	res.send('These are the top posts');
+app.get('/hot', function(req, res) {
+	request({
+		method: 'GET',
+		url: 'https://www.reddit.com/hot.json',
+	}).pipe(res);
 })
 
 app.get('/saved', function(req, res) {
