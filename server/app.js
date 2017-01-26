@@ -2,9 +2,11 @@ var express = require('express');
 var request = require('request');
 var app = express();
 
-app.get('/', function(req, res) {
-  res.send('This isn\'t Reddit');
-})
+// app.get('/', function(req, res) {
+//   res.send('This isn\'t Reddit');
+// })
+
+app.use(express.static(__dirname + '/../client'));
 
 app.get('/top', function(req, res) {
 	request({
