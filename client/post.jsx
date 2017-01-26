@@ -1,22 +1,39 @@
 class Post extends React.Component {
-	 constructor(props) {
+	constructor(props) {
     super(props);
+
+    this.savePost = this.savePost.bind(this);
   }
-  
+
+  savePost() {
+  	// check user
+
+  	// if already saved
+  		// remove from user
+  	// else
+  	  // add to user
+  	console.log('save post clicked');
+  }
+
 	render() {
+
+		let inline = {
+			display: "inline-block",
+		};
+
 		return (
 			<div className='post'>
-				<button className='save-post-button'></button>
-				<div className='post-content'>
-					<div className='post-media'>
-						<img src={props.post.thumbnail} />
+				<button className='save-post-button' onClick={this.savePost} style={inline}></button>
+				<div className='post-content' style={inline}>
+					<div className='post-media' style={inline}>
+						<img src={this.props.post.thumbnail} />
 					</div>
-					<div className='post-metadata'>
+					<div className='post-metadata' style={inline}>
 						<div className='post-title'>
-							{props.post.title}
+							{this.props.post.title}
 						</div>
 						<div className='post-comment-count'>
-							{props.post.commentCount}
+							{this.props.post.commentCount} comments
 						</div>
 					</div>
 				</div>
