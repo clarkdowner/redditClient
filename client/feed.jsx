@@ -7,7 +7,7 @@ class Feed extends React.Component {
 		return (
 			<div className='feed' style={{border: "1px solid black"}}>
 				<div className='feed-posts'>
-					{this.props.posts.map(post => <Post post={post} />)}
+					{this.props.posts.map(post => <Post post={post} key={post.id}/>)}
 				</div>
 			</div>
 		);
