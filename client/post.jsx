@@ -26,7 +26,7 @@ class Post extends React.Component {
 				<button className='save-post-button' onClick={this.savePost} style={inline}></button>
 				<div className='post-content' style={inline}>
 					<div className='post-media' style={inline}>
-						<img src={this.props.post.thumbnail} />
+						<img src={this.props.post.thumbnail.length > 15 ? this.props.post.thumbnail : 'assets/reddit.png'} />
 					</div>
 					<div className='post-metadata' style={inline}>
 						<div className='post-title'>
