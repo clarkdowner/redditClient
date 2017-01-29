@@ -161,7 +161,8 @@ class App extends React.Component {
 	logout() {
 		this.setState({
 			currentUser: null,
-      posts: []
+      posts: [],
+      currentTab: null
 		})
 	}
 
@@ -177,7 +178,17 @@ class App extends React.Component {
 			cursor: "pointer",
 		};
 
-		// let selectedTab = {};
+		let selectedTab = {
+      display: "inline-block",
+      padding: "0.9em",
+      backgroundColor: "red",
+      color: "white",
+      borderRadius: "8px 8px 0 0",
+      border: "1px solid black",
+      borderBottom: "0",
+      marginRight: "0.2em",
+      cursor: "pointer",
+    };
 
 		return (
 			<div className='app'>
@@ -185,13 +196,13 @@ class App extends React.Component {
 				{this.getLoginForm()}
 				<h1>RedditClient</h1>
 				<div className='app-navigation'>
-					<div className='navigation-top-button' style={tabStyle} onClick={() => this.getRelevantFeed('top')}>
+					<div className='navigation-top-button' style={this.state.currentTab === 'top' ? selectedTab : tabStyle} onClick={() => this.getRelevantFeed('top')}>
 						Top
 					</div>
-					<div className='navigation-hot-button' style={tabStyle} onClick={() => this.getRelevantFeed('hot')}>
+					<div className='navigation-hot-button' style={this.state.currentTab === 'hot' ? selectedTab : tabStyle} onClick={() => this.getRelevantFeed('hot')}>
 						Hot
 					</div>
-					<div className='navigation-saved-button' style={tabStyle} onClick={() => this.getRelevantFeed('saved')}>
+					<div className='navigation-saved-button' style={this.state.currentTab === 'saved' ? selectedTab : tabStyle} onClick={() => this.getRelevantFeed('saved')}>
 						Saved
 					</div>
 				</div>

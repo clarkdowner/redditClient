@@ -59,26 +59,20 @@ class Post extends React.Component {
   }
 
 	render() {
-
-		let text = {
-			display: "inline-block",
-      textDecoration: "none",
-      color: "black",
-		};
-
 		return (
-			<div className='post'>
-				<button className='save-post-button' onClick={this.savePost} style={{display: "inline-block"}}>{this.buttonText()}</button>
+			<div className='post' style={{margin: "1%", background: "aliceblue"}}>
+				<button className='save-post-button' onClick={this.savePost} style={{display: "inline-block", width: "15%"}}>{this.buttonText()}</button>
 				{this.loginNotice()}
-				<div className='post-content' style={{display: "inline-block"}}>
-					<div className='post-media' style={{display: "inline-block"}}>
+				<div className='post-content' style={{display: "inline-block", width: "85%"}}>
+					<div className='post-media' style={{display: "inline-block", width: "30%"}}>
 						<a href={this.props.post.url}><img src={this.props.post.thumbnail.length > 8 ? this.props.post.thumbnail : 'assets/reddit.png'} /></a>
 					</div>
-					<div className='post-metadata' style={text}>
+					<div className='post-metadata' style={{display: "inline-block", width: "70%"}}>
 						<div className='post-title'>
 							<a href={this.props.post.url}>{decodeURI(this.props.post.title)}</a>
 						</div>
 						<div className='post-comment-count'>
+              <br/>
 							<a href={this.props.post.url}>{this.props.post.commentCount} comments</a>
 						</div>
 					</div>
