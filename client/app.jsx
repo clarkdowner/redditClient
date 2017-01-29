@@ -1,62 +1,55 @@
-let customParse = (data) => {
-	let posts = [];
-
-	data.data.children.map(post => {
-		let postData = {};
-		postData.id = post.data.id;
-		postData.thumbnail = post.data.thumbnail;
-		postData.title = post.data.title;
-		postData.commentCount = post.data.num_comments;
-		postData.url = 'https://reddit.com' + post.data.permalink;
-		posts.push(postData);
-	});
-
-	return posts;
-}
-
 class App extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
 			currentUser: null,
 			posts: [],
-			// // render dummy data
-			// posts: [
-			// {
-			// 	thumbnail: 'https://i.redditmedia.com/cYidbHscdtzbVO41NcrzMG7ql12oclgYsogzoyI_soQ.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=108&amp;s=9aa457aca3c516907dbe2c826c0ddaee',
-			// 	title: 'Says Who?',
-			// 	commentCount: 100,
-			// 	id: 1,
-			// },
-			// {
-			// 	thumbnail: 'https://i.redditmedia.com/cYidbHscdtzbVO41NcrzMG7ql12oclgYsogzoyI_soQ.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=108&amp;s=9aa457aca3c516907dbe2c826c0ddaee',
-			// 	title: 'Cows aren\'t blue',
-			// 	commentCount:200,
-			// 	id: 2,
-			// },
-			// {
-			// 	thumbnail: 'https://i.redditmedia.com/cYidbHscdtzbVO41NcrzMG7ql12oclgYsogzoyI_soQ.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=108&amp;s=9aa457aca3c516907dbe2c826c0ddaee',
-			// 	title: 'Super Cool Post',
-			// 	commentCount:500,
-			// 	id: 3,
-			// },
-			// ]
+			currentTab: null,
+      badPassword: false,
 		};
 	}
 
-	dataSuccess(data) {
-		this.setState({
-			posts: customParse(data)
-		})
+  // update state with post data
+  dataSuccess(data) {
+    this.setState({
+      posts: this.parsePosts(data)
+    })
+  }
+
+  // error handling
+  dataError(err, feedType) {
+    console.error('Failed to get ' + feedType + ' posts');
+    console.error(err);
+  }
+
+  // page styling
+  changeTab(feed) {
+    this.setState({
+      currentTab: feed
+    })
+  }
+  
+  // parse reddit JSON
+	parsePosts(data) {
+		let posts = [];
+
+		data.data.children.map(post => {
+			let postData = {};
+			postData.id = post.data.id;
+			postData.thumbnail = post.data.thumbnail;
+			postData.title = post.data.title;
+			postData.commentCount = post.data.num_comments;
+			postData.url = 'https://reddit.com' + post.data.permalink;
+			posts.push(postData);
+		});
+
+		return posts;
 	}
 
-	dataError(err, feedType) {
-		console.error('Failed to get ' + feedType + ' posts');
-		console.error(err);
-	}
-
+  // ajax call for post data
 	getRelevantFeed(feed) {
 		if (feed === 'top') {
+			this.changeTab(feed);
 			$.ajax({
 				url: '/top',
 				method: 'GET',
@@ -68,6 +61,7 @@ class App extends React.Component {
 				},
 			});
 		} else if (feed === 'hot'){
+			this.changeTab(feed);
 			$.ajax({
 				url: '/hot',
 				method: 'GET',
@@ -79,25 +73,97 @@ class App extends React.Component {
 				},
 			});
 		} else if (feed === 'saved') {
-						$.ajax({
-				url: '/saved',
-				method: 'GET',
-				success: (data) => {
-					this.dataSuccess(data);
-				},
-				error: (err) => {
-					this.dataError(err, feed);
-				},
-			});
+			this.changeTab(feed);
+      if (this.state.currentUser !== null) {
+  			$.ajax({
+  				url: '/saved',
+  				method: 'GET',
+  				headers: {
+  					'username': this.state.currentUser
+  				},
+  				success: (data) => {
+            this.setState({
+              posts: JSON.parse(data)
+            })
+  				},
+  				error: (err) => {
+  					this.dataError(err, feed);
+  				},
+  			});
+      } else {
+        this.setState({
+          posts:[{title: 'Log in to see saved posts'}]
+        })
+      }
 		} else {
 			console.error('Unexpected feed. Expected values are \'top\', \'hot\', and \'saved\'.')
 		}
 	}
 
-	// Initialize feed with Top Posts
-	// componentDidMount() {
-	// 	this.getRelevantFeed('top');
-	// }
+  badPassword() {
+    if (this.state.badPassword) {
+      return (
+        <span><b>Username and password do not match</b></span>
+      );
+    }
+  }
+
+  // sign in / logout rendering logic
+	getLoginForm() {
+	  if (this.state.currentUser !== null) {
+	    return (
+	    	<span className='logged-in-text'>
+	    		Logged in as <b><em>{this.state.currentUser}</em></b><br/>
+	    		<button className='btn-logout' onClick={this.logout.bind(this)}>Logout</button>
+	    	</span>
+	    );
+	  } else {
+	    return (
+	      <span>
+		      <form className='login-form'>
+		        Username: <input className='login-username' type='text' name='username' /><br/>
+		        Password: <input className='login-password' type='password' name='password' /><br/>
+		        <button className='btn-login' onClick={this.signin.bind(this)}>Sign in</button>
+		      </form>
+	      </span>
+	    );
+	  }
+	}
+
+	signin(e) {
+	  e.preventDefault();
+	  $.ajax({
+	    url: '/user',
+	    method: 'GET',
+	    data: JSON.stringify({
+	      username: $('.login-username').val(),
+	      password: $('.login-password').val()
+	    }),
+	    contentType: 'application/json',
+	    success: (data) => {
+	      if (data === $('.login-username').val()) {  
+  	      this.setState({
+            currentUser: data,
+            badPassword: false
+          });
+        } else {
+          this.setState({
+            badPassword: true
+          });
+        }
+	    },
+	    error: (err) => {
+	      console.error('login failed: ', err);
+	    }
+	  });
+	}
+
+	logout() {
+		this.setState({
+			currentUser: null,
+      posts: []
+		})
+	}
 
 	render() {
 
@@ -111,8 +177,13 @@ class App extends React.Component {
 			cursor: "pointer",
 		};
 
+		// let selectedTab = {};
+
 		return (
 			<div className='app'>
+        {this.badPassword()}
+				{this.getLoginForm()}
+				<h1>RedditClient</h1>
 				<div className='app-navigation'>
 					<div className='navigation-top-button' style={tabStyle} onClick={() => this.getRelevantFeed('top')}>
 						Top
@@ -125,7 +196,7 @@ class App extends React.Component {
 					</div>
 				</div>
 				<div className='app-feed'>
-				  <Feed posts={this.state.posts}/>
+				  <Feed posts={this.state.posts} user={this.state.currentUser} />
 				</div>
 			</div>
 		);
@@ -133,4 +204,3 @@ class App extends React.Component {
 }
 
 window.App = App;
-// export default App;
