@@ -1,22 +1,13 @@
 var express = require('express');
-// var controller = require('./controllers/index.js');
 var mongoose = require('mongoose');
 var request = require('request');
 
-var mongoAddress = 'mongodb://devMongo:27017/easeCen';
-
-if (process.env.NODE_ENV !== 'production') {
-  mongoose.connect('mongodb://localhost', function(err) {
-    if (err) console.error(err);
-    else console.log('mongo connected');
-  });
-} else {
-  mongoose.connect(process.env.mongoAddress, function(err) {
-    if (err) console.error(err);
-    else console.log('mongo connected');
-  });
-}
-
+// connect to mongolabs URI
+mongoose.connect("mongodb://heroku_8l4vnv2b:45bfmjg7at8a27c76kpn3rppat@ds137149.mlab.com:37149/heroku_8l4vnv2b", function (err, database) {
+  if (err) throw err;
+  var server = app.listen(process.env.PORT || 3000);
+  console.log("Express server started on port %s", server.address().port);
+});
 
 // db schema
 var Schema = mongoose.Schema;
@@ -68,12 +59,16 @@ app.get('/saved*', function(req, res) {
 app.get('/user*', function(req, res) {
   var userInfo;
   for (var key in req.query) {
+    console.log('login query: ', encodeURI(JSON.parse(JSON.stringify(key))));
     userInfo = parseReq(encodeURI(JSON.parse(JSON.stringify(key)).slice(13)));
   }
   var username = userInfo.username;
   var password = userInfo.password;
+  console.log('username: ', username);
+  console.log('password: ', password);
 
   User.find({username: username}, function(err, success) {
+    console.log('success: ', success);
     if (err) { 
       console.log('finduser error: ', err)
       res.end();
@@ -101,6 +96,7 @@ app.get('/user*', function(req, res) {
         if (err) {
           console.log('addUser error: ', err)
         }
+        console.log('new user success: ', success);
         res.end(username);
       });
     }
@@ -109,26 +105,25 @@ app.get('/user*', function(req, res) {
 
 // update saved posts
 app.get('/post*', function(req, res) {
-      var username = req.headers.username;
-      var post = JSON.parse(decodeURI(req.headers.postcontent));
+  var username = req.headers.username;
+  var post = JSON.parse(decodeURI(req.headers.postcontent));
 
-      User.findOne({username: username}, function(err, success) {
-        if (err) {
-          console.log('err finding user');
-          res.end();
-        }
-        var userPosts = success.posts;
-        userPosts.unshift(post);
-        var update = {posts: userPosts};
+  User.findOne({username: username}, function(err, success) {
+    if (err) {
+      console.log('err finding user');
+      res.end();
+    }
+    var userPosts = success.posts;
+    userPosts.unshift(post);
+    var update = {posts: userPosts};
 
-        User.update({username: username}, {$set: update}, function(err) {
-          if (err) {
-            console.log('could not update posts')
-            res.end();
-          }
-          res.status(200).end();
-        })
-      })
-    });
+    User.update({username: username}, {$set: update}, function(err) {
+      if (err) {
+        console.log('could not update posts')
+        res.end();
+      }
+      res.status(200).end();
+    })
+  })
+});
 
-app.listen(process.env.PORT || 3000);
