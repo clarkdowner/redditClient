@@ -3,7 +3,20 @@ var express = require('express');
 var mongoose = require('mongoose');
 var request = require('request');
 
-mongoose.connect('mongodb://localhost');
+var mongoAddress = 'mongodb://devMongo:27017/easeCen';
+
+if (process.env.NODE_ENV !== 'production') {
+  mongoose.connect('mongodb://localhost', function(err) {
+    if (err) console.error(err);
+    else console.log('mongo connected');
+  });
+} else {
+  mongoose.connect(process.env.mongoAddress, function(err) {
+    if (err) console.error(err);
+    else console.log('mongo connected');
+  });
+}
+
 
 // db schema
 var Schema = mongoose.Schema;
@@ -118,6 +131,4 @@ app.get('/post*', function(req, res) {
       })
     });
 
-app.listen(3000, function() {
-  console.log('Listening on 3000');
-})
+app.listen(process.env.PORT || 3000);
